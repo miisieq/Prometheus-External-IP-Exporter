@@ -1,3 +1,5 @@
+fastapi
 prometheus-client
-requests
 pylint
+requests
+uvicorn
