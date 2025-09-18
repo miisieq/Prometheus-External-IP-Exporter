@@ -4,9 +4,6 @@ on:
   release:
     types: [published]
 
-env:
-  IMAGE_NAME: miisieq/prometheus-external-ip-exporter
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -21,8 +18,23 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build Docker image
-        run: docker build -t $IMAGE_NAME:${{ github.ref_name }} -t $IMAGE_NAME:latest .
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            miisieq/prometheus-external-ip-exporter
+          tags: |
+            type=semver,pattern={{version}}
 
-      - name: Push Docker image
-        run: docker push $IMAGE_NAME --all-tags
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
